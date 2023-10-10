@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android = "http://schemas.android.com/apk/res/android"
+              xmlns:app = "http://schemas.android.com/apk/res-auto"
+              android:id = "@+id/parentLayout"
+              android:layout_width = "match_parent"
+              android:layout_height = "match_parent"
+              android:background = "@mipmap/brg"
+              android:clickable = "true"
+              android:focusable = "true"
+              android:focusableInTouchMode = "true"
+              android:gravity = "center"
+              android:orientation = "vertical"
+              android:padding = "16dp">
+
+    <TextView
+        android:layout_width = "wrap_content"
+        android:layout_height = "wrap_content"
+        android:layout_gravity = "center"
+        android:layout_marginTop = "-50dp"
+        android:layout_marginBottom = "20dp"
+        android:text = "@string/login"
+        android:textColor = "@color/blue"
+        android:textSize = "25sp"
+        android:textStyle = "bold" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id = "@+id/signin_email_layout"
+        style = "@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width = "match_parent"
+        android:layout_height = "wrap_content"
+        android:hint = "@string/email"
+        android:textColorHint = "@color/blue"
+        app:boxStrokeColor = "@color/blue"
+        app:helperText = " "
+        app:helperTextTextColor = "@color/blue">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id = "@+id/signin_email"
+            android:layout_width = "match_parent"
+            android:layout_height = "wrap_content"
+            android:background = "@drawable/background_edittext"
+
+            android:inputType = "textEmailAddress"
+            android:textColor = "@color/blue" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id = "@+id/signin_password_layout"
+        style = "@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width = "match_parent"
+        android:layout_height = "wrap_content"
+        android:hint = "@string/password"
+        android:textColorHint = "@color/blue"
+        app:boxStrokeColor = "@color/blue"
+        app:endIconMode = "password_toggle"
+        app:endIconTint = "@color/blue"
+        app:helperText = " "
+        app:helperTextTextColor = "@color/blue">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id = "@+id/signin_password"
+            android:layout_width = "match_parent"
+            android:layout_height = "wrap_content"
+            android:background = "@drawable/background_edittext"
+            android:inputType = "textPassword" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id = "@+id/signin_button"
+        style = "@style/Widget.MaterialComponents.Button"
+        android:layout_width = "wrap_content"
+        android:layout_height = "wrap_content"
+        android:backgroundTint = "@color/blue"
+        android:text = "@string/login"
+        android:textColor = "@color/text"
+        app:cornerRadius = "16sp" />
+
+    <TextView
+        android:id = "@+id/signup_link"
+        android:layout_width = "wrap_content"
+        android:layout_height = "wrap_content"
+        android:layout_marginTop = "16dp"
+        android:text = "@string/don_t_have_an_account_sign_up_here"
+        android:textColor = "@color/blue" />
+
+    <TextView
+        android:id = "@+id/forgot_password"
+        android:layout_width = "wrap_content"
+        android:layout_height = "wrap_content"
+        android:layout_marginTop = "16dp"
+        android:text = "@string/forgot_password"
+        android:textColor = "@color/blue" />
+
+    <ProgressBar
+        android:id = "@+id/progressBar"
+        android:layout_width = "wrap_content"
+        android:layout_height = "wrap_content"
+        android:indeterminateTint = "@color/blue"
+        android:visibility = "invisible" />
+
+</LinearLayout>

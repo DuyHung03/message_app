@@ -1,0 +1,12 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name = "Base.Theme.Message"
+           parent = "Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name = "fontFamily">@font/baloo_paaji_2</item>
+    </style>
+
+    <style name = "Theme.Message"
+           parent = "Base.Theme.Message" />
+</resources>
