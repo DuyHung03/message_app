@@ -3,28 +3,35 @@
                                                    xmlns:app = "http://schemas.android.com/apk/res-auto"
                                                    xmlns:tools = "http://schemas.android.com/tools"
                                                    android:layout_width = "match_parent"
+                                                   android:padding = "10dp"
                                                    android:layout_height = "match_parent"
                                                    tools:context = ".view.MainActivity">
 
-    <TextView
-        android:id="@+id/text"
-        android:layout_width = "wrap_content"
-        android:layout_height = "wrap_content"
-        android:text = "Hello World!"
+    <fragment
+        android:id = "@+id/nav_host_fragment"
+        android:name = "androidx.navigation.fragment.NavHostFragment"
+        android:layout_width = "match_parent"
+        android:layout_height = "0dp"
+        android:layout_weight = "1"
+        app:defaultNavHost = "true"
+        app:layout_constraintBottom_toTopOf = "@+id/bottomNavView"
+        app:layout_constraintEnd_toEndOf = "parent"
+        app:layout_constraintStart_toStartOf = "parent"
+        app:layout_constraintTop_toTopOf = "parent"
+        app:navGraph = "@navigation/main_nav_graph"
+        tools:ignore = "FragmentTagUsage" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id = "@+id/bottomNavView"
+        android:layout_width = "match_parent"
+        android:layout_height = "50dp"
+        android:background = "@drawable/round"
+        app:labelVisibilityMode = "unlabeled"
+        app:itemIconSize="40dp"
+        app:itemIconTint="@color/blue"
         app:layout_constraintBottom_toBottomOf = "parent"
         app:layout_constraintEnd_toEndOf = "parent"
         app:layout_constraintStart_toStartOf = "parent"
-        app:layout_constraintTop_toTopOf = "parent" />
-
-    <Button
-        android:id = "@+id/log_out_button"
-        android:layout_width = "wrap_content"
-        android:layout_height = "wrap_content"
-        android:layout_marginTop = "24dp"
-        android:text = "@string/log_out"
-        app:layout_constraintEnd_toEndOf = "parent"
-        app:layout_constraintHorizontal_bias = "0.498"
-        app:layout_constraintStart_toStartOf = "parent"
-        app:layout_constraintTop_toBottomOf = "@+id/text" />
+        app:menu = "@menu/bottom_menu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

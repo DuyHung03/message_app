@@ -66,6 +66,8 @@ dependencies {
 
     //round image
     implementation("com.makeramen:roundedimageview:2.3.0")
+    //circle image
+    implementation ("de.hdodenhof:circleimageview:3.1.0")
 
     //lifeCycle
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
