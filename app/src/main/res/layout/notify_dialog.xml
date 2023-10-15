@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android = "http://schemas.android.com/apk/res/android"
+              android:layout_width = "match_parent"
+              android:layout_height = "match_parent"
+              android:layout_margin = "16dp"
+              android:background = "@drawable/background_dialog"
+              android:orientation = "vertical">
+
+    <TextView
+        android:id = "@+id/tvTitleDialog"
+        android:layout_width = "match_parent"
+        android:layout_height = "wrap_content"
+        android:background = "@drawable/top_corner_bg"
+        android:gravity = "center"
+        android:text = "@string/enter_your_email_to_reset_password"
+        android:textColor = "@color/text"
+        android:textSize = "20sp" />
+
+    <TextView
+        android:id = "@+id/tvMessage"
+        android:layout_width = "match_parent"
+        android:layout_height = "wrap_content"
+        android:layout_marginTop = "16dp"
+        android:layout_marginBottom = "16dp"
+        android:gravity = "center"
+        android:text = "@string/already_have_an_account_login_here"
+        android:textColor = "@color/blue"
+        android:textSize = "18sp" />
+
+    <Button
+        android:id = "@+id/okButton"
+        android:layout_width = "wrap_content"
+        android:layout_height = "wrap_content"
+        android:layout_gravity = "center"
+        android:backgroundTint = "@color/blue"
+        android:text = "@string/ok"
+        android:textSize="18sp"
+        android:textColor = "@color/text" />
+
+</LinearLayout>

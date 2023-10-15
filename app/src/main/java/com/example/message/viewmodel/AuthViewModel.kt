@@ -14,17 +14,13 @@ import kotlinx.coroutines.launch
 class AuthViewModel(
     application: Application,
 ) : ViewModel() {
-    private var authRepository: AuthRepository
+    private var authRepository: AuthRepository = AuthRepository(application)
     private val _loading = MutableLiveData<Boolean>()
     val loading: LiveData<Boolean>
         get() = _loading
 
-    init {
-        authRepository = AuthRepository(application)
-    }
-
     val currentUser: MutableLiveData<FirebaseUser?> =
-        MutableLiveData(authRepository.auth.currentUser)
+        MutableLiveData(authRepository.currentUser.value)
 
     fun signUp(
         email: String,
@@ -54,8 +50,21 @@ class AuthViewModel(
         }
     }
 
+    fun sendPasswordResetEmail(
+        email: String,
+        callback: (Boolean, String) -> Unit,
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            authRepository.sendPasswordResetEmail(email) { success, message ->
+                callback(success, message)
+            }
+        }
+    }
+
     fun logOut() {
-        authRepository.logOut()
-        currentUser.postValue(null)
+        viewModelScope.launch {
+            (Dispatchers.IO)
+            authRepository.logOut()
+        }
     }
 }

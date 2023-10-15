@@ -21,4 +21,8 @@
     </string>
     <string name = "chat">Chat</string>
     <string name = "account">Account</string>
+    <string name = "enter_your_email_to_reset_password">Enter your email to reset password</string>
+    <string name = "send">Send</string>
+    <string name = "cancel">Cancel</string>
+    <string name = "ok">OK</string>
 </resources>

@@ -91,7 +91,8 @@ class SignUpActivity : AppCompatActivity() {
             && isValidEmail(email.editText?.text.toString().trim(), this)
         ) {
             authViewModel.signUp(
-                email.editText?.text.toString().trim(), password.editText?.text.toString().trim()
+                email.editText?.text.toString().trim(),
+                password.editText?.text.toString().trim()
             ) { authResult ->
                 when (authResult) {
                     is Resource.Success -> {
