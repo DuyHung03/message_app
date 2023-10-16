@@ -50,6 +50,7 @@ class AuthRepository(
         callback: (Resource<FirebaseUser?>) -> Unit,
     ) {
         auth.signInWithEmailAndPassword(email, password)
+
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     //check if password changed, update password field in database
@@ -57,8 +58,7 @@ class AuthRepository(
 
                     callback(Resource.Success(currentUser.value))
                 } else {
-                    Toast.makeText(application, task.exception?.message, Toast.LENGTH_LONG)
-                        .show()
+                    Toast.makeText(application, task.exception?.message, Toast.LENGTH_LONG).show()
                 }
             }
     }
@@ -97,9 +97,7 @@ class AuthRepository(
             "isPasswordUpdated" to false
         )
         //add user with generate id
-        db.collection("users")
-            .document(email)
-            .set(user)
+        db.collection("users").document(email).set(user)
             .addOnSuccessListener { _ ->
                 Log.d("TAG", "DocumentSnapshot added with ID: $uid")
             }.addOnFailureListener { e ->
@@ -125,20 +123,35 @@ class AuthRepository(
         email: String,
         callback: (Boolean, String) -> Unit,
     ) {
-        auth.sendPasswordResetEmail(email)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    //change isPasswordUpdated to true
-                    val userRef = db.collection("users").document(email)
-                    userRef.update("isPasswordUpdated", true)
+        // Check if the email exists in Firestore
+        val userRef = db.collection("users").document(email)
+        userRef.get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+                    // Email exists, proceed to send the password reset email
+                    auth.sendPasswordResetEmail(email)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                //change isPasswordUpdated to true
+                                userRef.update("isPasswordUpdated", true)
 
-                    //return callback
-                    callback(true, "Password reset email sent to $email successfully")
+                                //return callback
+                                callback(true, "Password reset email sent to $email successfully")
+                            } else {
+                                val errorMessage = task.exception?.message ?: "Unknown error!"
+                                callback(false, errorMessage)
+                                Log.d("TAG", "sendPasswordResetEmail: $errorMessage")
+                            }
+                        }
                 } else {
-                    val errorMessage = task.exception?.message ?: "Unknown error!"
-                    callback(false, errorMessage)
-                    Log.d("TAG", "sendPasswordResetEmail: $errorMessage")
+                    // Email doesn't exist, provide an error message
+                    callback(false, "Email $email is not found!.")
                 }
             }
+            .addOnFailureListener { exception ->
+                // Handle any errors here.
+                callback(false, "Error while checking email existence: ${exception.message}")
+            }
     }
+
 }

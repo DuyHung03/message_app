@@ -1,18 +1,17 @@
 package com.example.message.view.auth
 
-import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
-import android.view.Window
-import android.view.WindowManager
 import android.widget.Button
-import android.widget.EditText
+import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.example.message.R
 import com.example.message.databinding.ActivityLoginBinding
@@ -26,6 +25,9 @@ import com.example.message.util.validateTextInputLayouts
 import com.example.message.view.MainActivity
 import com.example.message.viewmodel.AuthViewModel
 import com.example.message.viewmodel.AuthViewModelFactory
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 
 class LoginActivity : AppCompatActivity() {
 
@@ -84,52 +86,46 @@ class LoginActivity : AppCompatActivity() {
 
         addTextChangeListeners(
             listOf(
-                binding.signinEmailLayout,
-                binding.signinPasswordLayout
+                binding.signinEmailLayout, binding.signinPasswordLayout
             )
         )
 
         setupHideKeyboardOnTouchOutside(
             listOf(
-                binding.signinEmailLayout,
-                binding.signinPasswordLayout
+                binding.signinEmailLayout, binding.signinPasswordLayout
             ), binding.parentLayout
         )
     }
 
     private fun openDialog() {
-        val dialog = Dialog(this)
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        dialog.setCancelable(false)
+        val dialog = BottomSheetDialog(this)
+
         dialog.setContentView(R.layout.reset_password_dialog)
-        dialog.window?.setLayout(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.WRAP_CONTENT
-        )
+
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        val sendButton = dialog.findViewById<Button>(R.id.sendEmailResetButton)
-        val cancelButton = dialog.findViewById<Button>(R.id.cancelDialogButton)
-        val loading = dialog.findViewById<ProgressBar>(R.id.progressBar)
+        val sendButton = dialog.findViewById<Button>(R.id.sendButton)!!
+        val cancelButton = dialog.findViewById<ImageView>(R.id.cancelDialogButton)!!
+        val loading = dialog.findViewById<ProgressBar>(R.id.progressBar)!!
 
         sendButton.setOnClickListener {
             loading.visibility = View.VISIBLE
-            val email = dialog.findViewById<EditText>(R.id.edtEmailReset)
+            val email: TextInputEditText? = dialog.findViewById(R.id.edtEmailReset)
 
-            if (email.text.toString().trim().isNotEmpty() || isValidEmail(
-                    email.text.toString().trim(), this
+            if (email?.text.toString().trim().isNotEmpty() || isValidEmail(
+                    email?.text.toString().trim(), this
                 )
             ) {
                 authViewModel.sendPasswordResetEmail(
-                    email.text.toString().trim()
+                    email?.text.toString().trim()
                 ) { success, message ->
                     loading.visibility = View.GONE
                     if (success) {
+                        notifyDialog("Send success ", message, true)
                         dialog.dismiss()
-                        notifyDialog("Send success", message)
                     } else {
+                        notifyDialog("Send Failed", message, false)
                         dialog.dismiss()
-                        notifyDialog("Send Failed", message)
                     }
                 }
             } else {
@@ -142,26 +138,32 @@ class LoginActivity : AppCompatActivity() {
             dialog.dismiss()
         }
 
+        val parentLayout: ConstraintLayout = dialog.findViewById(R.id.parentLayout)!!
+        val emailLayout: TextInputLayout = dialog.findViewById(R.id.textInputLayout)!!
+        setupHideKeyboardOnTouchOutside(listOf(emailLayout), parentLayout)
+
         dialog.show()
     }
 
-    private fun notifyDialog(titleDialog: String, messageDialog: String) {
-        val dialog = Dialog(this)
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        dialog.setCancelable(false)
+    private fun notifyDialog(titleDialog: String, messageDialog: String, isSuccess: Boolean) {
+        val dialog = BottomSheetDialog(this)
         dialog.setContentView(R.layout.notify_dialog)
-        dialog.window?.setLayout(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.WRAP_CONTENT
-        )
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        val title = dialog.findViewById<TextView>(R.id.tvTitleDialog)
-        val message = dialog.findViewById<TextView>(R.id.tvMessage)
-        val okButton = dialog.findViewById<Button>(R.id.okButton)
+        val title = dialog.findViewById<TextView>(R.id.tvTitle)!!
+        val message = dialog.findViewById<TextView>(R.id.tvMessage)!!
+        val okButton = dialog.findViewById<Button>(R.id.okButton)!!
 
         title.text = titleDialog
         message.text = messageDialog
+        if (isSuccess) {
+            title.setTextColor(ContextCompat.getColor(this, R.color.green))
+            message.setTextColor(ContextCompat.getColor(this, R.color.green))
+        } else {
+            title.setTextColor(ContextCompat.getColor(this, R.color.red))
+            message.setTextColor(ContextCompat.getColor(this, R.color.red))
+        }
+
 
         okButton.setOnClickListener {
             dialog.dismiss()
@@ -180,13 +182,13 @@ class LoginActivity : AppCompatActivity() {
             Pair(password, "Please enter your password!"),
         )
 
-        if (
-            validateTextInputLayouts(fieldsToValidate)
-            && isValidEmail(email.editText?.text.toString(), this)
+        if (validateTextInputLayouts(fieldsToValidate) && isValidEmail(
+                email.editText?.text.toString(),
+                this
+            )
         ) {
             authViewModel.logIn(
-                email.editText?.text.toString().trim(),
-                password.editText?.text.toString().trim()
+                email.editText?.text.toString().trim(), password.editText?.text.toString().trim()
             ) { authResult ->
                 when (authResult) {
                     is Resource.Success -> {
@@ -204,5 +206,4 @@ class LoginActivity : AppCompatActivity() {
             }
         }
     }
-
 }
