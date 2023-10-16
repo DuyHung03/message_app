@@ -52,12 +52,34 @@ class AuthRepository(
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    //check if password changed, update password field in database
+                    updateNewPassword(email, password)
+
                     callback(Resource.Success(currentUser.value))
                 } else {
                     Toast.makeText(application, task.exception?.message, Toast.LENGTH_LONG)
                         .show()
                 }
             }
+    }
+
+    private fun updateNewPassword(email: String, password: String) {
+        val userRef = db.collection("users").document(email)
+        userRef.get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val doc = task.result
+                if (doc != null) {
+                    val isPasswordUpdated = doc.getBoolean("isPasswordUpdated") ?: false
+
+                    if (isPasswordUpdated) {
+                        //update password
+                        userRef.update("password", password)
+                        //reset isPasswordUpdated to false
+                        userRef.update("isPasswordUpdated", false)
+                    }
+                }
+            }
+        }
     }
 
     private fun addNewUserToDatabase(
@@ -71,11 +93,12 @@ class AuthRepository(
             "password" to password,
             "userId" to uid,
             "displayName" to null,
-            "photoURL" to null
+            "photoURL" to null,
+            "isPasswordUpdated" to false
         )
         //add user with generate id
         db.collection("users")
-            .document(uid)
+            .document(email)
             .set(user)
             .addOnSuccessListener { _ ->
                 Log.d("TAG", "DocumentSnapshot added with ID: $uid")
@@ -105,7 +128,11 @@ class AuthRepository(
         auth.sendPasswordResetEmail(email)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Log.d("TAG", "sendPasswordResetEmail: ${task.result}")
+                    //change isPasswordUpdated to true
+                    val userRef = db.collection("users").document(email)
+                    userRef.update("isPasswordUpdated", true)
+
+                    //return callback
                     callback(true, "Password reset email sent to $email successfully")
                 } else {
                     val errorMessage = task.exception?.message ?: "Unknown error!"
