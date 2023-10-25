@@ -22,7 +22,7 @@ import com.example.message.util.isValidEmail
 import com.example.message.util.setupHideKeyboardOnTouchOutside
 import com.example.message.util.toast
 import com.example.message.util.validateTextInputLayouts
-import com.example.message.view.MainActivity
+import com.example.message.view.home.MainActivity
 import com.example.message.viewmodel.AuthViewModel
 import com.example.message.viewmodel.AuthViewModelFactory
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -188,17 +188,19 @@ class LoginActivity : AppCompatActivity() {
             )
         ) {
             authViewModel.logIn(
-                email.editText?.text.toString().trim(), password.editText?.text.toString().trim()
-            ) { authResult ->
-                when (authResult) {
+                email.editText?.text.toString().trim(),
+                password.editText?.text.toString().trim()
+            ) { userResponse ->
+                when (userResponse) {
                     is Resource.Success -> {
-                        authViewModel.currentUser.value = authResult.data
+                        //set current user = userResponse from callback
+                        authViewModel.currentUser.value = userResponse.data
                         intent<MainActivity>()
                         this.finish()
                     }
 
                     is Resource.Failure -> {
-                        val errorMessage = authResult.message
+                        val errorMessage = userResponse.message
                         toast(errorMessage, this)
                     }
 

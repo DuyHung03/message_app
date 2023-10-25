@@ -7,7 +7,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.message.repository.AuthRepository
 import com.example.message.util.Resource
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.DocumentReference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -15,6 +18,8 @@ class AuthViewModel(
     application: Application,
 ) : ViewModel() {
     private var authRepository: AuthRepository = AuthRepository(application)
+    val db = authRepository.db
+
     private val _loading = MutableLiveData<Boolean>()
     val loading: LiveData<Boolean>
         get() = _loading
@@ -43,9 +48,9 @@ class AuthViewModel(
     ) {
         _loading.value = true
         viewModelScope.launch(Dispatchers.IO) {
-            authRepository.login(email, password) { res ->
+            authRepository.login(email, password) { user ->
                 _loading.value = false
-                callback(res)
+                callback(user)
             }
         }
     }
@@ -62,9 +67,30 @@ class AuthViewModel(
     }
 
     fun logOut() {
-        viewModelScope.launch {
-            (Dispatchers.IO)
+        _loading.value = true
+        viewModelScope.launch(Dispatchers.IO)
+        {
             authRepository.logOut()
+            _loading.value = false
         }
     }
+
+    fun updateDocument(
+        docRef: DocumentReference,
+        field: String,
+        value: Any,
+        onSuccess: OnSuccessListener<Void> = OnSuccessListener {},
+        onFailure: OnFailureListener = OnFailureListener {},
+    ) {
+        viewModelScope.launch {
+            authRepository.updateDocument(docRef, field, value, onSuccess, onFailure)
+        }
+    }
+
+    fun updateUserProfile(displayName: String?, photoURI: String?) {
+        viewModelScope.launch(Dispatchers.IO) {
+            authRepository.updateUserProfile(displayName, photoURI)
+        }
+    }
+
 }

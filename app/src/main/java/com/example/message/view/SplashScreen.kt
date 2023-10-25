@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.message.R
 import com.example.message.util.intent
 import com.example.message.view.auth.LoginActivity
+import com.example.message.view.home.MainActivity
 import com.example.message.viewmodel.AuthViewModel
 import com.example.message.viewmodel.AuthViewModelFactory
 import com.google.firebase.auth.ktx.auth
@@ -23,8 +24,8 @@ class SplashScreen : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Firebase.firestore.useEmulator("10.0.2.2", 8080)
-        Firebase.auth.useEmulator("10.0.2.2", 9090)
+//        Firebase.firestore.useEmulator("10.0.2.2", 8080)
+//        Firebase.auth.useEmulator("10.0.2.2", 9090)
 
         setContentView(R.layout.activity_splash_screen)
 

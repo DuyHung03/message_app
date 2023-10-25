@@ -7,7 +7,7 @@
 
     <fragment
         android:id = "@+id/homeFragment"
-        android:name = "com.example.message.HomeFragment"
+        android:name = "com.example.message.view.home.fragments.HomeFragment"
         android:label = "fragment_home"
         tools:layout = "@layout/fragment_home" >
         <action
@@ -16,7 +16,7 @@
     </fragment>
     <fragment
         android:id = "@+id/settingFragment"
-        android:name = "com.example.message.SettingFragment"
+        android:name = "com.example.message.view.home.fragments.SettingFragment"
         android:label = "fragment_setting"
         tools:layout = "@layout/fragment_setting" />
 </navigation>

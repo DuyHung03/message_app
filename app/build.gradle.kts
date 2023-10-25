@@ -67,7 +67,7 @@ dependencies {
     //round image
     implementation("com.makeramen:roundedimageview:2.3.0")
     //circle image
-    implementation ("de.hdodenhof:circleimageview:3.1.0")
+    implementation("de.hdodenhof:circleimageview:3.1.0")
 
     //lifeCycle
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
@@ -78,4 +78,12 @@ dependencies {
     //navigation component
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.4")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.4")
+
+    //image picker
+    implementation("com.github.dhaval2404:imagepicker:2.1")
+    implementation("androidx.activity:activity-ktx:1.8.0")
+    implementation("androidx.fragment:fragment-ktx:1.6.1")
+
+    //glide
+    implementation("com.github.bumptech.glide:glide:4.16.0")
 }

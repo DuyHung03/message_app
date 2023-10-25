@@ -1,12 +1,17 @@
 package com.example.message.repository
 
 import android.app.Application
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.example.message.util.Resource
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.ktx.userProfileChangeRequest
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.firestoreSettings
 import com.google.firebase.ktx.Firebase
@@ -19,11 +24,12 @@ class AuthRepository(
 ) {
 
     private val auth = FirebaseAuth.getInstance()
-    private val db = Firebase.firestore.apply {
+    val db = Firebase.firestore.apply {
         firestoreSettings = firestoreSettings {
             isPersistenceEnabled = true
         }
     }
+
     val currentUser: MutableLiveData<FirebaseUser?> = MutableLiveData(auth.currentUser)
 
     fun signUp(
@@ -54,32 +60,33 @@ class AuthRepository(
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     //check if password changed, update password field in database
-                    updateNewPassword(email, password)
+                    val userRef = db.collection("users").document(email)
 
+                    userRef.get().addOnCompleteListener { doc ->
+                        if (doc.isSuccessful) {
+                            if (doc.result != null) {
+                                val isPasswordUpdated =
+                                    doc.result.getBoolean("isPasswordUpdated") ?: false
+
+                                if (isPasswordUpdated) {
+
+                                    //update Password
+                                    updateDocument(userRef, "password", password, {
+                                        //update isPasswordUpdate to false
+                                        updateDocument(userRef, "isPasswordUpdated", true)
+                                    },
+                                        { e ->
+                                            Log.w("TAG", "Error updating document", e)
+                                        })
+                                }
+                            }
+                        }
+                    }
                     callback(Resource.Success(currentUser.value))
                 } else {
                     Toast.makeText(application, task.exception?.message, Toast.LENGTH_LONG).show()
                 }
             }
-    }
-
-    private fun updateNewPassword(email: String, password: String) {
-        val userRef = db.collection("users").document(email)
-        userRef.get().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val doc = task.result
-                if (doc != null) {
-                    val isPasswordUpdated = doc.getBoolean("isPasswordUpdated") ?: false
-
-                    if (isPasswordUpdated) {
-                        //update password
-                        userRef.update("password", password)
-                        //reset isPasswordUpdated to false
-                        userRef.update("isPasswordUpdated", false)
-                    }
-                }
-            }
-        }
     }
 
     private fun addNewUserToDatabase(
@@ -94,7 +101,8 @@ class AuthRepository(
             "userId" to uid,
             "displayName" to null,
             "photoURL" to null,
-            "isPasswordUpdated" to false
+            "isPasswordUpdated" to false,
+            "isNewUser" to true
         )
         //add user with generate id
         db.collection("users").document(email).set(user)
@@ -133,7 +141,15 @@ class AuthRepository(
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
                                 //change isPasswordUpdated to true
-                                userRef.update("isPasswordUpdated", true)
+                                updateDocument(userRef,
+                                    "isPasswordUpdated",
+                                    true,
+                                    {
+                                        Log.d("TAG", "DocumentSnapshot successfully updated!")
+                                    },
+                                    { e ->
+                                        Log.w("TAG", "Error updating document", e)
+                                    })
 
                                 //return callback
                                 callback(true, "Password reset email sent to $email successfully")
@@ -151,6 +167,35 @@ class AuthRepository(
             .addOnFailureListener { exception ->
                 // Handle any errors here.
                 callback(false, "Error while checking email existence: ${exception.message}")
+            }
+    }
+
+    fun updateDocument(
+        docRef: DocumentReference,
+        field: String,
+        value: Any,
+        onSuccess: OnSuccessListener<Void> = OnSuccessListener {},
+        onFailure: OnFailureListener = OnFailureListener {},
+    ) {
+        val updateData = hashMapOf<String, Any>()
+        updateData[field] = value
+
+        docRef.update(updateData)
+            .addOnSuccessListener(onSuccess)
+            .addOnFailureListener(onFailure)
+    }
+
+    fun updateUserProfile(name: String?, photoURI: String?) {
+        val profileUpdates = userProfileChangeRequest {
+            displayName = name
+            photoUri = Uri.parse(photoURI)
+        }
+
+        currentUser.value!!.updateProfile(profileUpdates)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d("TAG", "User profile updated.")
+                }
             }
     }
 
