@@ -43,21 +43,32 @@ class HomeFragment : Fragment() {
         lifecycleScope.launch { // Launch on the Main dispatcher
             val currentUser =
                 authViewModel.currentUser.value // Get the current user on the Main dispatcher
+
+            //get displayName from currentUser
             val displayText = withContext(Dispatchers.IO) {
                 currentUser?.displayName?.takeIf { it.isNotBlank() } ?: currentUser?.email
             }
 
-            val photo = withContext(Dispatchers.IO) {
-                Glide.with(this@HomeFragment)
-                    .load(currentUser?.photoUrl)
-                    .override(250, 250)
-                    .submit()
-                    .get()
-            }
+            //set avatar image
+            withContext(Dispatchers.IO) {
+                //check if photoUrl in currentUser is not null
+                if (currentUser?.photoUrl != null) {
+                    //use Glide to load photo
+                    val photo = withContext(Dispatchers.IO) {
+                        Glide.with(this@HomeFragment)
+                            .load(currentUser.photoUrl)
+                            .override(250, 250)
+                            .submit()
+                            .get()
+                    }
 
-            withContext(Dispatchers.Main) {
-                displayName.text = displayText
-                avatar.setImageDrawable(photo)
+                    withContext(Dispatchers.Main) {
+                        displayName.text = displayText
+                        //set avatar image
+                        avatar.setImageDrawable(photo)
+                    }
+                }
+
             }
         }
 

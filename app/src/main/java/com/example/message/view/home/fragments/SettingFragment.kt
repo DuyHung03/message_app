@@ -73,22 +73,22 @@ class SettingFragment : Fragment() {
             val currentUser =
                 authViewModel.currentUser.value // Get the current user on the Main dispatcher
 
-            val imageLoader = Glide.with(this@SettingFragment)
-            // Get the user's photo URL
 
-            val photoUrl = currentUser?.photoUrl
+            withContext(Dispatchers.IO) {
+                if (currentUser?.photoUrl != null) {
+                    val photo = withContext(Dispatchers.IO) {
+                        Glide.with(this@SettingFragment)
+                            .load(currentUser.photoUrl)
+                            .override(250, 250)
+                            .submit()
+                            .get()
+                    }
 
-            // Load the photo from the network using Dispatchers.IO
-            val photo = withContext(Dispatchers.IO) {
-                imageLoader.load(photoUrl)
-                    .override(250, 250)
-                    .submit()
-                    .get()
-            }
+                    withContext(Dispatchers.Main) {
+                        avatar.setImageDrawable(photo)
+                    }
+                }
 
-            // Set the photo on the avatar view on the main thread
-            withContext(Dispatchers.Main) {
-                avatar.setImageDrawable(photo)
             }
         }
 
