@@ -195,8 +195,10 @@ class LoginActivity : AppCompatActivity() {
                     is Resource.Success -> {
                         //set current user = userResponse from callback
                         authViewModel.currentUser.value = userResponse.data
+
                         intent<MainActivity>()
                         this.finish()
+
                     }
 
                     is Resource.Failure -> {

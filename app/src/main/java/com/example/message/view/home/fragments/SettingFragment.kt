@@ -5,22 +5,27 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
-import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.message.R
+import com.example.message.util.toast
+import com.example.message.view.home.EditProfileActivity
 import com.example.message.viewmodel.AuthViewModel
 import com.example.message.viewmodel.AuthViewModelFactory
 import com.github.dhaval2404.imagepicker.ImagePicker
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -33,8 +38,10 @@ class SettingFragment : Fragment() {
     private lateinit var avatar: CircleImageView
     private var callback: SettingFragmentCallback? = null
     private lateinit var logOutButton: Button
-    private lateinit var progressBar: ProgressBar
     private lateinit var pickAvatarBtn: ImageView
+    private var imageUploadJob: Job? = null
+    private lateinit var displayName: TextView
+    private lateinit var editProfile: Button
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,34 +59,32 @@ class SettingFragment : Fragment() {
 
         logOutButton = view.findViewById(R.id.log_out_button)
         avatar = view.findViewById(R.id.avatarImage)
-        progressBar = view.findViewById(R.id.progressBar)
         pickAvatarBtn = view.findViewById(R.id.pickAvatarButton)
-
-
-//        lifecycleScope.launch(Dispatchers.Main) {
-//            authViewModel.loading.observe(viewLifecycleOwner) { isLoading ->
-//                progressBar.visibility = if (isLoading) View.VISIBLE else View.INVISIBLE
-//            }
-//        }
+        displayName = view.findViewById(R.id.displayName)
+        editProfile = view.findViewById(R.id.editProfileButton)
 
         lifecycleScope.launch(Dispatchers.Default) {
             initControl()
         }
-
-
 
         lifecycleScope.launch {
 
             val currentUser =
                 authViewModel.currentUser.value // Get the current user on the Main dispatcher
 
+            val displayText = withContext(Dispatchers.IO) {
+                currentUser?.displayName?.takeIf { it.isNotBlank() } ?: currentUser?.email
+            }
+            displayName.text = displayText
 
             withContext(Dispatchers.IO) {
                 if (currentUser?.photoUrl != null) {
+                    Log.d("TAG", "onCreateView: ${currentUser.photoUrl}")
                     val photo = withContext(Dispatchers.IO) {
                         Glide.with(this@SettingFragment)
                             .load(currentUser.photoUrl)
                             .override(250, 250)
+                            .error(R.mipmap.brg)
                             .submit()
                             .get()
                     }
@@ -95,27 +100,49 @@ class SettingFragment : Fragment() {
         return view
     }
 
-
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         @Suppress("DEPRECATION") super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
             data?.data?.let { uri ->
-                authViewModel.updateUserProfile("", uri.toString())
-                val userRef = authViewModel.db.collection("users")
-                    .document(authViewModel.currentUser.value!!.email.toString())
-                authViewModel.updateDocument(userRef, "photoURL", uri)
-                lifecycleScope.launch {
-                    // Load the photo from the network using Dispatchers.IO
-                    val photo = withContext(Dispatchers.IO) {
-                        Glide.with(this@SettingFragment).load(uri)
-                            .override(250, 250)
-                            .submit()
-                            .get()
-                    }
-                    // Set the photo on the avatar view on the main thread
-                    withContext(Dispatchers.Main) {
-                        avatar.setImageDrawable(photo)
+                imageUploadJob = lifecycleScope.launch {
+                    authViewModel.uploadImageToStorage(uri) { imgUrl, error ->
+                        if (imgUrl != null) {
+                            if (this.isActive) {
+
+                                //update user photo
+                                authViewModel.updateUserProfile("", imgUrl)
+
+                                //set avatar
+                                lifecycleScope.launch {
+                                    // Load the photo from the network using Dispatchers.IO
+                                    val photo = withContext(Dispatchers.IO) {
+                                        Glide.with(this@SettingFragment)
+                                            .load(imgUrl)
+                                            .error(R.mipmap.brg)
+                                            .override(250, 250)
+                                            .submit()
+                                            .get()
+                                    }
+                                    // Set the photo on the avatar view on the main thread
+                                    withContext(Dispatchers.Main) {
+                                        avatar.setImageDrawable(photo)
+                                    }
+                                }
+
+                                //update image url in db
+                                lifecycleScope.launch {
+                                    withContext(Dispatchers.IO) {
+                                        val userRef = authViewModel.db.collection("users")
+                                            .document(authViewModel.currentUser.value!!.email.toString())
+                                        authViewModel.updateDocument(userRef, "photoURL", imgUrl)
+                                    }
+                                }
+
+                            } else {
+                                toast(error, requireContext())
+                            }
+                        }
                     }
                 }
             }
@@ -126,6 +153,10 @@ class SettingFragment : Fragment() {
         logOutButton.setOnClickListener {
             authViewModel.logOut()
             callback?.onFinishMainActivity()
+        }
+
+        editProfile.setOnClickListener {
+            startActivity(Intent(requireContext(), EditProfileActivity::class.java))
         }
 
         pickAvatarBtn.setOnClickListener { pickAvatar() }
@@ -142,5 +173,11 @@ class SettingFragment : Fragment() {
         } else {
             throw RuntimeException("$context must implement SettingFragmentCallback")
         }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        // Cancel the imageUploadJob when the fragment is stopped
+        imageUploadJob?.cancel()
     }
 }

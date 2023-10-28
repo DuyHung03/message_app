@@ -25,6 +25,13 @@
     <string name = "send">Send</string>
     <string name = "cancel">Cancel</string>
     <string name = "ok">OK</string>
-    <string name =
-                "enter_your_email_here_we_will_sent_you_an_email_to_reset_your_password">Enter your email here, we will sent you an email to reset your password:</string>
+    <string name = "enter_your_email_here_we_will_sent_you_an_email_to_reset_your_password">Enter your email here, we will sent you an email to reset your password:</string>
+    <string name = "update">Update</string>
+    <string name = "please_update_your_display_name_and_avatar">Please update your display name and avatar</string>
+    <string name = "choose_your_avatar">Choose your avatar</string>
+    <string name = "what_s_your_display_name">What\'s your display name:</string>
+    <string name = "display_name">Display Name</string>
+    <string name = "next">Next</string>
+    <string name = "update_profile">Update Profile</string>
+    <string name = "edit_profile">Edit Profile</string>
 </resources>

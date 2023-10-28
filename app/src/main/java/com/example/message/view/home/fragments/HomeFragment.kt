@@ -30,6 +30,7 @@ class HomeFragment : Fragment() {
             this, AuthViewModelFactory(application = Application())
         )[AuthViewModel::class.java]
 
+
     }
 
     override fun onCreateView(
@@ -48,6 +49,7 @@ class HomeFragment : Fragment() {
             val displayText = withContext(Dispatchers.IO) {
                 currentUser?.displayName?.takeIf { it.isNotBlank() } ?: currentUser?.email
             }
+            displayName.text = displayText
 
             //set avatar image
             withContext(Dispatchers.IO) {
@@ -58,17 +60,16 @@ class HomeFragment : Fragment() {
                         Glide.with(this@HomeFragment)
                             .load(currentUser.photoUrl)
                             .override(250, 250)
+                            .error(R.mipmap.brg)
                             .submit()
                             .get()
                     }
 
                     withContext(Dispatchers.Main) {
-                        displayName.text = displayText
                         //set avatar image
                         avatar.setImageDrawable(photo)
                     }
                 }
-
             }
         }
 

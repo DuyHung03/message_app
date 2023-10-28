@@ -27,6 +27,7 @@
         android:id = "@+id/bottomNavView"
         android:layout_width = "match_parent"
         android:layout_height = "50dp"
+        app:itemRippleColor="#00FFFFFF"
         android:background = "@drawable/round"
         app:itemIconSize = "40dp"
         app:itemIconTint = "@color/text"

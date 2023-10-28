@@ -15,6 +15,10 @@ import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.firestoreSettings
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Singleton
 
 @Suppress("DEPRECATION")
@@ -29,6 +33,10 @@ class AuthRepository(
             isPersistenceEnabled = true
         }
     }
+
+    private val storage = FirebaseStorage.getInstance()
+
+    val storageReference = storage.reference
 
     val currentUser: MutableLiveData<FirebaseUser?> = MutableLiveData(auth.currentUser)
 
@@ -186,9 +194,10 @@ class AuthRepository(
     }
 
     fun updateUserProfile(name: String?, photoURI: String?) {
+        val currentPhotoUri = auth.currentUser?.photoUrl.toString()
         val profileUpdates = userProfileChangeRequest {
             displayName = name
-            photoUri = Uri.parse(photoURI)
+            photoUri = Uri.parse(photoURI ?: currentPhotoUri)
         }
 
         currentUser.value!!.updateProfile(profileUpdates)
@@ -199,4 +208,29 @@ class AuthRepository(
             }
     }
 
+    fun uploadImageToStorage(
+        filePath: Uri,
+        callback: (String?, String?) -> Unit,
+    ) {
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val fileName = "image_$timeStamp.jpg"
+        val imageReference = storageReference.child("images/$fileName")
+
+        imageReference.putFile(filePath)
+            .addOnSuccessListener { snapshot ->
+                // Get the download URL from the snapshot
+                snapshot.storage.downloadUrl
+                    .addOnSuccessListener { uri ->
+                        val imageUrl = uri.toString()
+                        Log.d("TAG", "uploadImageToStorage: $imageUrl")
+                        callback(imageUrl, null)
+                    }
+                    .addOnFailureListener { e ->
+                        callback(null, e.message.toString())
+                    }
+            }
+            .addOnFailureListener { e ->
+                callback(null, e.message.toString())
+            }
+    }
 }

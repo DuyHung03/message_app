@@ -1,6 +1,7 @@
 package com.example.message.viewmodel
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -26,6 +27,8 @@ class AuthViewModel(
 
     val currentUser: MutableLiveData<FirebaseUser?> =
         MutableLiveData(authRepository.currentUser.value)
+
+    val storageReference = authRepository.storageReference
 
     fun signUp(
         email: String,
@@ -67,12 +70,7 @@ class AuthViewModel(
     }
 
     fun logOut() {
-        _loading.value = true
-        viewModelScope.launch(Dispatchers.IO)
-        {
-            authRepository.logOut()
-            _loading.value = false
-        }
+        authRepository.logOut()
     }
 
     fun updateDocument(
@@ -82,7 +80,7 @@ class AuthViewModel(
         onSuccess: OnSuccessListener<Void> = OnSuccessListener {},
         onFailure: OnFailureListener = OnFailureListener {},
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             authRepository.updateDocument(docRef, field, value, onSuccess, onFailure)
         }
     }
@@ -93,4 +91,14 @@ class AuthViewModel(
         }
     }
 
+    fun uploadImageToStorage(
+        filePath: Uri,
+        callback: (String?, String?) -> Unit,
+    ) {
+        viewModelScope.launch {
+            authRepository.uploadImageToStorage(filePath) { imgUrl, error ->
+                callback(imgUrl, error)
+            }
+        }
+    }
 }
