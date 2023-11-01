@@ -25,7 +25,6 @@ import com.github.dhaval2404.imagepicker.ImagePicker
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -63,9 +62,13 @@ class SettingFragment : Fragment() {
         displayName = view.findViewById(R.id.displayName)
         editProfile = view.findViewById(R.id.editProfileButton)
 
-        lifecycleScope.launch(Dispatchers.Default) {
-            initControl()
-        }
+        return view
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        initControl()
 
         lifecycleScope.launch {
 
@@ -81,12 +84,8 @@ class SettingFragment : Fragment() {
                 if (currentUser?.photoUrl != null) {
                     Log.d("TAG", "onCreateView: ${currentUser.photoUrl}")
                     val photo = withContext(Dispatchers.IO) {
-                        Glide.with(this@SettingFragment)
-                            .load(currentUser.photoUrl)
-                            .override(250, 250)
-                            .error(R.mipmap.brg)
-                            .submit()
-                            .get()
+                        Glide.with(this@SettingFragment).load(currentUser.photoUrl)
+                            .override(250, 250).error(R.mipmap.brg).submit().get()
                     }
 
                     withContext(Dispatchers.Main) {
@@ -96,8 +95,6 @@ class SettingFragment : Fragment() {
 
             }
         }
-
-        return view
     }
 
     @Deprecated("Deprecated in Java")
@@ -108,40 +105,33 @@ class SettingFragment : Fragment() {
                 imageUploadJob = lifecycleScope.launch {
                     authViewModel.uploadImageToStorage(uri) { imgUrl, error ->
                         if (imgUrl != null) {
-                            if (this.isActive) {
+                            //update user photo
+                            authViewModel.updateUserProfile("", imgUrl)
 
-                                //update user photo
-                                authViewModel.updateUserProfile("", imgUrl)
-
-                                //set avatar
-                                lifecycleScope.launch {
-                                    // Load the photo from the network using Dispatchers.IO
-                                    val photo = withContext(Dispatchers.IO) {
-                                        Glide.with(this@SettingFragment)
-                                            .load(imgUrl)
-                                            .error(R.mipmap.brg)
-                                            .override(250, 250)
-                                            .submit()
-                                            .get()
-                                    }
-                                    // Set the photo on the avatar view on the main thread
-                                    withContext(Dispatchers.Main) {
-                                        avatar.setImageDrawable(photo)
-                                    }
+                            //set avatar
+                            lifecycleScope.launch {
+                                // Load the photo from the network using Dispatchers.IO
+                                val photo = withContext(Dispatchers.IO) {
+                                    Glide.with(this@SettingFragment).load(imgUrl).override(250, 250)
+                                        .error(R.mipmap.brg).submit().get()
                                 }
-
-                                //update image url in db
-                                lifecycleScope.launch {
-                                    withContext(Dispatchers.IO) {
-                                        val userRef = authViewModel.db.collection("users")
-                                            .document(authViewModel.currentUser.value!!.email.toString())
-                                        authViewModel.updateDocument(userRef, "photoURL", imgUrl)
-                                    }
+                                // Set the photo on the avatar view on the main thread
+                                withContext(Dispatchers.Main) {
+                                    avatar.setImageDrawable(photo)
                                 }
-
-                            } else {
-                                toast(error, requireContext())
                             }
+
+                            //update image url in db
+                            lifecycleScope.launch {
+                                withContext(Dispatchers.IO) {
+                                    val userRef = authViewModel.db.collection("users")
+                                        .document(authViewModel.currentUser.value!!.email.toString())
+                                    authViewModel.updateDocument(userRef, "photoURL", imgUrl)
+                                }
+                            }
+
+                        } else {
+                            toast(error, requireContext())
                         }
                     }
                 }
@@ -173,11 +163,5 @@ class SettingFragment : Fragment() {
         } else {
             throw RuntimeException("$context must implement SettingFragmentCallback")
         }
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        // Cancel the imageUploadJob when the fragment is stopped
-        imageUploadJob?.cancel()
     }
 }
