@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
+import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.example.message.R
 import com.example.message.adapter.MainPagerAdapter
 import com.example.message.util.intent
@@ -36,7 +37,7 @@ class MainActivity : AppCompatActivity(), SettingFragment.SettingFragmentCallbac
         viewPager = findViewById(R.id.viewPager)
         pagerAdapter = MainPagerAdapter(supportFragmentManager, lifecycle, fragmentList)
         viewPager.adapter = pagerAdapter
-        viewPager.offscreenPageLimit = 1
+        viewPager.offscreenPageLimit = 2
 
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavView)
 
@@ -47,7 +48,17 @@ class MainActivity : AppCompatActivity(), SettingFragment.SettingFragmentCallbac
             }
             true
         }
+
+        viewPager.registerOnPageChangeCallback(object : OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                bottomNavigationView.menu.getItem(position).isChecked = true
+            }
+
+        })
+        viewPager.isUserInputEnabled = false
     }
+
 
     //called when log out button clicked in setting fragment
     override fun onFinishMainActivity() {

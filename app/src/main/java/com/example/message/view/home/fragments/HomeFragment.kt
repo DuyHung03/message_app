@@ -15,13 +15,14 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.bumptech.glide.Glide
 import com.example.message.R
 import com.example.message.adapter.UsersAdapter
 import com.example.message.model.User
+import com.example.message.util.GlideImageLoader
 import com.example.message.view.chat.ChatActivity
 import com.example.message.viewmodel.AuthViewModel
 import com.example.message.viewmodel.AuthViewModelFactory
+import com.google.firebase.auth.FirebaseUser
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,6 +36,8 @@ class HomeFragment : Fragment() {
     private lateinit var progressBar: ProgressBar
     private val userList: MutableList<User> = mutableListOf()
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private var currentUser: FirebaseUser? = null
+    private lateinit var glideImageLoader: GlideImageLoader
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +46,7 @@ class HomeFragment : Fragment() {
             this, AuthViewModelFactory(application = Application())
         )[AuthViewModel::class.java]
 
+        glideImageLoader = GlideImageLoader(requireContext())
 
     }
 
@@ -59,83 +63,99 @@ class HomeFragment : Fragment() {
 
         progressBar.visibility = View.VISIBLE
 
-        lifecycleScope.launch { // Launch on the Main dispatcher
-            val currentUser =
-                authViewModel.currentUser.value // Get the current user on the Main dispatcher
+        setUserInfo()
+        setupSwipeRefreshListener()
 
-            //get displayName from currentUser
-            val displayText = withContext(Dispatchers.IO) {
-                currentUser?.displayName?.takeIf { it.isNotBlank() } ?: currentUser?.email
-            }
-            displayName.text = displayText
-
-            //set avatar image
-            withContext(Dispatchers.IO) {
-                //check if photoUrl in currentUser is not null
-                if (currentUser?.photoUrl != null) {
-                    //use Glide to load photo
-                    val photo = withContext(Dispatchers.IO) {
-                        Glide.with(this@HomeFragment)
-                            .load(currentUser.photoUrl)
-                            .override(250, 250)
-                            .error(R.mipmap.brg)
-                            .submit()
-                            .get()
-                    }
-
-                    withContext(Dispatchers.Main) {
-                        //set avatar image
-                        avatar.setImageDrawable(photo)
-                    }
-                }
-            }
-        }
 
         return view
     }
 
     override fun onResume() {
         super.onResume()
-        lifecycleScope.launch {
-            withContext(Dispatchers.IO) {
-                getUsersList()
-            }
+        loadUserAvatar()
+        fetchUsersList()
+    }
 
-            swipeRefreshLayout.setOnRefreshListener {
-                getUsersList()
-                swipeRefreshLayout.isRefreshing = false
+    private fun setupSwipeRefreshListener() {
+        swipeRefreshLayout.setOnRefreshListener {
+            fetchUsersList()
+            swipeRefreshLayout.isRefreshing = false
+        }
+    }
+
+    private fun setUserInfo() {
+        lifecycleScope.launch {
+            currentUser =
+                authViewModel.currentUser.value // Get the current user on the Main dispatcher
+
+            //get displayName from currentUser
+            val displayText = withContext(Dispatchers.IO) {
+                currentUser?.displayName?.takeIf { it.isNotBlank() } ?: currentUser?.email
+            }
+            withContext(Dispatchers.Main) {
+                displayName.text = displayText
             }
         }
     }
 
-    private fun getUsersList() {
-        userList.clear()
-        authViewModel.db.collection("users")
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                for (doc in querySnapshot) {
-                    val userId = doc.getString("userId")
-                    val displayName = doc.getString("displayName")
-                    val email = doc.getString("email")
 
-                    if (userId != authViewModel.currentUser.value?.uid) {
-                        val user = User(userId, email, displayName)
-                        userList.add(user)
+    private fun loadUserAvatar() {
+        lifecycleScope.launch {
+            withContext(Dispatchers.Main) {
+                //check if photoUrl in currentUser is not null
+                if (currentUser?.photoUrl != null) {
+                    //use Glide to load photo
+                    glideImageLoader.load(
+                        currentUser?.photoUrl.toString(),
+                        avatar,
+                        R.mipmap.ic_user,
+                        R.mipmap.ic_user
+                    )
+                }
+            }
+        }
+    }
+
+    private fun fetchUsersList() {
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                userList.clear()
+                authViewModel.db.collection("users")
+                    .get()
+                    .addOnSuccessListener { querySnapshot ->
+                        for (doc in querySnapshot) {
+                            val userId = doc.getString("userId")
+                            val displayName = doc.getString("displayName")
+                            val email = doc.getString("email")
+
+                            if (userId != authViewModel.currentUser.value?.uid) {
+                                val user = User(userId, email, displayName)
+                                userList.add(user)
+                            }
+                        }
+                        //recyclerView
+                        setupRecyclerView()
                     }
-                }
-                //recyclerView
-                recyclerView.layoutManager = LinearLayoutManager(context)
-                val adapter = UsersAdapter(userList) { user ->
-                    val intent = Intent(requireContext(), ChatActivity::class.java)
-                    intent.putExtra("email", user.email)
-                    startActivity(intent)
-                }
-                recyclerView.adapter = adapter
-                progressBar.visibility = View.GONE
             }
-            .addOnFailureListener { e ->
-                Log.d("TAG", "onCreateView: ", e)
-                progressBar.visibility = View.GONE
-            }
+                .addOnFailureListener { e ->
+                    Log.d("TAG", "onCreateView: ", e)
+                    progressBar.visibility = View.GONE
+                }
+        }
+    }
+
+    private fun setupRecyclerView() {
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        val adapter = UsersAdapter(userList) { user ->
+            startChatActivity(user)
+        }
+        recyclerView.adapter = adapter
+        progressBar.visibility = View.GONE
+    }
+
+    private fun startChatActivity(user: User) {
+        val intent = Intent(requireContext(), ChatActivity::class.java)
+        intent.putExtra("email", user.email)
+        startActivity(intent)
     }
 }
