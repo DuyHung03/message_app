@@ -1,10 +1,12 @@
 package com.example.message.model
 
-import android.net.Uri
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class User(
     var userId: String?,
     val email: String?,
     val displayName: String? = null,
-    val photoURL: Uri? = null,
-)
+    val photoURL: String? = null,
+) : Parcelable

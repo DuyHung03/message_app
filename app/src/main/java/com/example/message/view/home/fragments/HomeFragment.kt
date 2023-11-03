@@ -98,7 +98,6 @@ class HomeFragment : Fragment() {
         }
     }
 
-
     private fun loadUserAvatar() {
         lifecycleScope.launch {
             withContext(Dispatchers.Main) {
@@ -108,8 +107,8 @@ class HomeFragment : Fragment() {
                     glideImageLoader.load(
                         currentUser?.photoUrl.toString(),
                         avatar,
-                        R.mipmap.ic_user,
-                        R.mipmap.ic_user
+                        R.drawable.ic_user_foreground,
+                        R.drawable.ic_user_foreground
                     )
                 }
             }
@@ -127,9 +126,10 @@ class HomeFragment : Fragment() {
                             val userId = doc.getString("userId")
                             val displayName = doc.getString("displayName")
                             val email = doc.getString("email")
+                            val photoUrl = doc.getString("photoURL")
 
                             if (userId != authViewModel.currentUser.value?.uid) {
-                                val user = User(userId, email, displayName)
+                                val user = User(userId, email, displayName, photoUrl)
                                 userList.add(user)
                             }
                         }
@@ -146,7 +146,7 @@ class HomeFragment : Fragment() {
 
     private fun setupRecyclerView() {
         recyclerView.layoutManager = LinearLayoutManager(context)
-        val adapter = UsersAdapter(userList) { user ->
+        val adapter = UsersAdapter(userList, requireContext()) { user ->
             startChatActivity(user)
         }
         recyclerView.adapter = adapter
@@ -155,7 +155,7 @@ class HomeFragment : Fragment() {
 
     private fun startChatActivity(user: User) {
         val intent = Intent(requireContext(), ChatActivity::class.java)
-        intent.putExtra("email", user.email)
+        intent.putExtra("user_object", user)
         startActivity(intent)
     }
 }

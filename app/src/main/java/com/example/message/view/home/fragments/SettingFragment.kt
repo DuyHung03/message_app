@@ -52,6 +52,15 @@ class SettingFragment : Fragment() {
         glideImageLoader = GlideImageLoader(requireContext())
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is SettingFragmentCallback) {
+            callback = context
+        } else {
+            throw RuntimeException("$context must implement SettingFragmentCallback")
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
@@ -101,7 +110,9 @@ class SettingFragment : Fragment() {
                 if (currentUser?.photoUrl != null) {
                     glideImageLoader.load(
                         currentUser?.photoUrl.toString(),
-                        avatar, R.mipmap.ic_user, R.mipmap.ic_user
+                        avatar,
+                        R.drawable.ic_user_foreground,
+                        R.drawable.ic_user_foreground
                     )
                 }
             }
@@ -138,7 +149,12 @@ class SettingFragment : Fragment() {
     private fun setAvatar(imgUrl: String) {
         lifecycleScope.launch {
             withContext(Dispatchers.Main) {
-                glideImageLoader.load(imgUrl, avatar, R.mipmap.ic_user, R.mipmap.ic_user)
+                glideImageLoader.load(
+                    imgUrl,
+                    avatar,
+                    R.drawable.ic_user_foreground,
+                    R.drawable.ic_user_foreground
+                )
             }
         }
     }
@@ -156,14 +172,5 @@ class SettingFragment : Fragment() {
 
     private fun pickAvatar() {
         ImagePicker.with(this).galleryOnly().crop().start()
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is SettingFragmentCallback) {
-            callback = context
-        } else {
-            throw RuntimeException("$context must implement SettingFragmentCallback")
-        }
     }
 }
