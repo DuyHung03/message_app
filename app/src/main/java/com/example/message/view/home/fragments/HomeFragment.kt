@@ -20,7 +20,7 @@ import com.example.message.adapter.UsersAdapter
 import com.example.message.model.User
 import com.example.message.util.GlideImageLoader
 import com.example.message.view.chat.ChatActivity
-import com.example.message.viewmodel.AuthViewModel
+import com.example.message.viewmodel.ChatViewModel
 import com.example.message.viewmodel.AuthViewModelFactory
 import com.google.firebase.auth.FirebaseUser
 import de.hdodenhof.circleimageview.CircleImageView
@@ -29,7 +29,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class HomeFragment : Fragment() {
-    private lateinit var authViewModel: AuthViewModel
+    private lateinit var chatViewModel: ChatViewModel
     private lateinit var displayName: TextView
     private lateinit var avatar: CircleImageView
     private lateinit var recyclerView: RecyclerView
@@ -42,9 +42,9 @@ class HomeFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        authViewModel = ViewModelProvider(
+        chatViewModel = ViewModelProvider(
             this, AuthViewModelFactory(application = Application())
-        )[AuthViewModel::class.java]
+        )[ChatViewModel::class.java]
 
         glideImageLoader = GlideImageLoader(requireContext())
 
@@ -86,7 +86,7 @@ class HomeFragment : Fragment() {
     private fun setUserInfo() {
         lifecycleScope.launch {
             currentUser =
-                authViewModel.currentUser.value // Get the current user on the Main dispatcher
+                chatViewModel.currentUser.value // Get the current user on the Main dispatcher
 
             //get displayName from currentUser
             val displayText = withContext(Dispatchers.IO) {
@@ -119,7 +119,7 @@ class HomeFragment : Fragment() {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
                 userList.clear()
-                authViewModel.db.collection("users")
+                chatViewModel.db.collection("users")
                     .get()
                     .addOnSuccessListener { querySnapshot ->
                         for (doc in querySnapshot) {
@@ -128,7 +128,7 @@ class HomeFragment : Fragment() {
                             val email = doc.getString("email")
                             val photoUrl = doc.getString("photoURL")
 
-                            if (userId != authViewModel.currentUser.value?.uid) {
+                            if (userId != chatViewModel.currentUser.value?.uid) {
                                 val user = User(userId, email, displayName, photoUrl)
                                 userList.add(user)
                             }
@@ -145,12 +145,16 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        recyclerView.layoutManager = LinearLayoutManager(context)
-        val adapter = UsersAdapter(userList, requireContext()) { user ->
-            startChatActivity(user)
+        lifecycleScope.launch {
+            withContext(Dispatchers.Main) {
+                recyclerView.layoutManager = LinearLayoutManager(context)
+                val adapter = UsersAdapter(userList, requireContext()) { user ->
+                    startChatActivity(user)
+                }
+                recyclerView.adapter = adapter
+                progressBar.visibility = View.GONE
+            }
         }
-        recyclerView.adapter = adapter
-        progressBar.visibility = View.GONE
     }
 
     private fun startChatActivity(user: User) {

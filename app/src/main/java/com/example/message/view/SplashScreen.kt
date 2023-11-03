@@ -10,16 +10,13 @@ import com.example.message.R
 import com.example.message.util.intent
 import com.example.message.view.auth.LoginActivity
 import com.example.message.view.home.MainActivity
-import com.example.message.viewmodel.AuthViewModel
+import com.example.message.viewmodel.ChatViewModel
 import com.example.message.viewmodel.AuthViewModelFactory
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
 
 @SuppressLint("CustomSplashScreen")
 class SplashScreen : AppCompatActivity() {
-    private val splashTimeOut: Long = 1500 // 1.5 seconds
-    private lateinit var authViewModel: AuthViewModel
+    private val splashTimeOut: Long = 1000 // 1 seconds
+    private lateinit var chatViewModel: ChatViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,12 +26,12 @@ class SplashScreen : AppCompatActivity() {
 
         setContentView(R.layout.activity_splash_screen)
 
-        authViewModel =
-            ViewModelProvider(this, AuthViewModelFactory(application))[AuthViewModel::class.java]
+        chatViewModel =
+            ViewModelProvider(this, AuthViewModelFactory(application))[ChatViewModel::class.java]
 
 
         Handler(Looper.getMainLooper()).postDelayed({
-            authViewModel.currentUser.observe(this) { res ->
+            chatViewModel.currentUser.observe(this) { res ->
                 if (res != null) {
                     intent<MainActivity>()
                     finish()

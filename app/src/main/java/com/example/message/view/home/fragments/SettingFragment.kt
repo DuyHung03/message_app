@@ -18,7 +18,7 @@ import com.example.message.R
 import com.example.message.util.GlideImageLoader
 import com.example.message.util.toast
 import com.example.message.view.home.EditProfileActivity
-import com.example.message.viewmodel.AuthViewModel
+import com.example.message.viewmodel.ChatViewModel
 import com.example.message.viewmodel.AuthViewModelFactory
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.auth.FirebaseUser
@@ -32,7 +32,7 @@ class SettingFragment : Fragment() {
         fun onFinishMainActivity()
     }
 
-    private lateinit var authViewModel: AuthViewModel
+    private lateinit var chatViewModel: ChatViewModel
     private lateinit var avatar: CircleImageView
     private var callback: SettingFragmentCallback? = null
     private lateinit var logOutButton: Button
@@ -45,9 +45,9 @@ class SettingFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        authViewModel = ViewModelProvider(
+        chatViewModel = ViewModelProvider(
             this, AuthViewModelFactory(application = Application())
-        )[AuthViewModel::class.java]
+        )[ChatViewModel::class.java]
 
         glideImageLoader = GlideImageLoader(requireContext())
     }
@@ -80,7 +80,7 @@ class SettingFragment : Fragment() {
 
     private fun initControl() {
         logOutButton.setOnClickListener {
-            authViewModel.logOut()
+            chatViewModel.logOut()
             callback?.onFinishMainActivity()
         }
 
@@ -99,7 +99,7 @@ class SettingFragment : Fragment() {
 
     private fun setUserInfo() {
         lifecycleScope.launch {
-            currentUser = authViewModel.currentUser.value
+            currentUser = chatViewModel.currentUser.value
             val displayText = withContext(Dispatchers.IO) {
                 currentUser?.displayName?.takeIf { it.isNotBlank() } ?: currentUser?.email
             }
@@ -126,10 +126,10 @@ class SettingFragment : Fragment() {
         if (resultCode == Activity.RESULT_OK) {
             data?.data?.let { uri ->
                 lifecycleScope.launch {
-                    authViewModel.uploadImageToStorage(uri) { imgUrl, error ->
+                    chatViewModel.uploadImageToStorage(uri) { imgUrl, error ->
                         if (imgUrl != null) {
                             //update user photoUrl
-                            authViewModel.updateUserProfile("", imgUrl)
+                            chatViewModel.updateUserProfile("", imgUrl)
 
                             //set avatar immediately
                             setAvatar(imgUrl)
@@ -162,9 +162,9 @@ class SettingFragment : Fragment() {
     private fun updateImageUrlInDb(imgUrl: String) {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
-                val userRef = authViewModel.db.collection("users")
-                    .document(authViewModel.currentUser.value!!.email.toString())
-                authViewModel.updateDocument(userRef, "photoURL", imgUrl)
+                val userRef = chatViewModel.db.collection("users")
+                    .document(chatViewModel.currentUser.value!!.email.toString())
+                chatViewModel.updateDocument(userRef, "photoURL", imgUrl)
             }
         }
     }

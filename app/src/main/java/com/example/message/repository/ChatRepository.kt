@@ -23,7 +23,7 @@ import javax.inject.Singleton
 
 @Suppress("DEPRECATION")
 @Singleton
-class AuthRepository(
+class ChatRepository(
     private var application: Application,
 ) {
 
@@ -233,4 +233,11 @@ class AuthRepository(
                 callback(null, e.message.toString())
             }
     }
+
+    fun addMessageToDb(
+
+    ){
+
+    }
+
 }

@@ -16,12 +16,12 @@ import com.example.message.util.isValidEmail
 import com.example.message.util.setupHideKeyboardOnTouchOutside
 import com.example.message.util.toast
 import com.example.message.util.validateTextInputLayouts
-import com.example.message.viewmodel.AuthViewModel
+import com.example.message.viewmodel.ChatViewModel
 import com.example.message.viewmodel.AuthViewModelFactory
 
 class SignUpActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySignUpBinding
-    private lateinit var authViewModel: AuthViewModel
+    private lateinit var chatViewModel: ChatViewModel
     private lateinit var signUpButton: Button
     private lateinit var progressBar: ProgressBar
     private lateinit var loginLink: TextView
@@ -31,8 +31,8 @@ class SignUpActivity : AppCompatActivity() {
         setContentView(R.layout.activity_sign_up)
         binding = ActivitySignUpBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        authViewModel =
-            ViewModelProvider(this, AuthViewModelFactory(application))[AuthViewModel::class.java]
+        chatViewModel =
+            ViewModelProvider(this, AuthViewModelFactory(application))[ChatViewModel::class.java]
 
         initViews()
         initControl()
@@ -55,7 +55,7 @@ class SignUpActivity : AppCompatActivity() {
             this.finish()
         }
 
-        authViewModel.loading.observe(this) { isLoading ->
+        chatViewModel.loading.observe(this) { isLoading ->
             progressBar.visibility = if (isLoading) View.VISIBLE else View.INVISIBLE
         }
 
@@ -90,7 +90,7 @@ class SignUpActivity : AppCompatActivity() {
         if (validateTextInputLayouts(fieldsToValid)
             && isValidEmail(email.editText?.text.toString().trim(), this)
         ) {
-            authViewModel.signUp(
+            chatViewModel.signUp(
                 email.editText?.text.toString().trim(),
                 password.editText?.text.toString().trim()
             ) { authResult ->

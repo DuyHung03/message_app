@@ -2,6 +2,7 @@ package com.example.message.view.chat
 
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -17,6 +18,8 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var avatar: ImageView
     private lateinit var displayName: TextView
     private lateinit var glideImageLoader: GlideImageLoader
+    private lateinit var sendButton: ImageView
+    private lateinit var editTextMessage: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,18 +29,11 @@ class ChatActivity : AppCompatActivity() {
 
         glideImageLoader = GlideImageLoader(this)
 
-        toolbar = findViewById(R.id.chat_toolbar)
-        setSupportActionBar(toolbar)
+        initView()
+        setUserInfo()
+    }
 
-        supportActionBar?.setDisplayShowTitleEnabled(false) //hide default title
-
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_left_arrow_foreground)
-
-
-        avatar = toolbar.findViewById(R.id.avatar)
-        displayName = toolbar.findViewById(R.id.displayName)
-
+    private fun setUserInfo() {
         intent?.let {
             val user =
                 intent.extras?.get("user_object") as? User
@@ -53,6 +49,26 @@ class ChatActivity : AppCompatActivity() {
                 )
             }
         }
+    }
+
+    private fun initView() {
+        toolbar = findViewById(R.id.chat_toolbar)
+        setSupportActionBar(toolbar)
+
+        supportActionBar?.setDisplayShowTitleEnabled(false) //hide default title
+
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_left_arrow_foreground)
+
+        avatar = toolbar.findViewById(R.id.avatar)
+        displayName = toolbar.findViewById(R.id.displayName)
+
+        sendButton = binding.sendButton
+        editTextMessage = binding.edtMessage
+    }
+
+    override fun onStart() {
+        super.onStart()
 
     }
 

@@ -23,7 +23,7 @@ import com.example.message.util.setupHideKeyboardOnTouchOutside
 import com.example.message.util.toast
 import com.example.message.util.validateTextInputLayouts
 import com.example.message.view.home.MainActivity
-import com.example.message.viewmodel.AuthViewModel
+import com.example.message.viewmodel.ChatViewModel
 import com.example.message.viewmodel.AuthViewModelFactory
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.textfield.TextInputEditText
@@ -31,7 +31,7 @@ import com.google.android.material.textfield.TextInputLayout
 
 class LoginActivity : AppCompatActivity() {
 
-    private lateinit var authViewModel: AuthViewModel
+    private lateinit var chatViewModel: ChatViewModel
 
     private lateinit var loginButton: Button
     private lateinit var signUpLink: TextView
@@ -46,9 +46,9 @@ class LoginActivity : AppCompatActivity() {
         setContentView(binding.root)
 
 
-        authViewModel = ViewModelProvider(
+        chatViewModel = ViewModelProvider(
             this, AuthViewModelFactory(application)
-        )[AuthViewModel::class.java]
+        )[ChatViewModel::class.java]
 
         initView()
         initControl()
@@ -80,7 +80,7 @@ class LoginActivity : AppCompatActivity() {
             openDialog()
         }
 
-        authViewModel.loading.observe(this) { isLoading ->
+        chatViewModel.loading.observe(this) { isLoading ->
             progressBar.visibility = if (isLoading) View.VISIBLE else View.INVISIBLE
         }
 
@@ -116,7 +116,7 @@ class LoginActivity : AppCompatActivity() {
                     email?.text.toString().trim(), this
                 )
             ) {
-                authViewModel.sendPasswordResetEmail(
+                chatViewModel.sendPasswordResetEmail(
                     email?.text.toString().trim()
                 ) { success, message ->
                     loading.visibility = View.GONE
@@ -187,14 +187,14 @@ class LoginActivity : AppCompatActivity() {
                 this
             )
         ) {
-            authViewModel.logIn(
+            chatViewModel.logIn(
                 email.editText?.text.toString().trim(),
                 password.editText?.text.toString().trim()
             ) { userResponse ->
                 when (userResponse) {
                     is Resource.Success -> {
                         //set current user = userResponse from callback
-                        authViewModel.currentUser.value = userResponse.data
+                        chatViewModel.currentUser.value = userResponse.data
 
                         intent<MainActivity>()
                         this.finish()

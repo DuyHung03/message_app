@@ -9,8 +9,8 @@ class AuthViewModelFactory(
 ) : ViewModelProvider.Factory {
     @Suppress("unchecked_cast")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
-            return AuthViewModel(application) as T
+        if (modelClass.isAssignableFrom(ChatViewModel::class.java)) {
+            return ChatViewModel(application) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
