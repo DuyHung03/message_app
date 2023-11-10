@@ -44,8 +44,8 @@
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id = "@+id/bottomNavView"
         android:layout_width = "match_parent"
-        android:layout_height = "50dp"
-        app:itemIconSize = "40dp"
+        android:layout_height = "56dp"
+        app:itemIconSize = "45dp"
         app:itemIconTint = "@color/text"
         android:background="@color/blue"
         app:itemRippleColor = "#00FFFFFF"

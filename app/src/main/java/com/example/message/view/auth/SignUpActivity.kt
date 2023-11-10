@@ -17,7 +17,7 @@ import com.example.message.util.setupHideKeyboardOnTouchOutside
 import com.example.message.util.toast
 import com.example.message.util.validateTextInputLayouts
 import com.example.message.viewmodel.ChatViewModel
-import com.example.message.viewmodel.AuthViewModelFactory
+import com.example.message.viewmodel.ChatViewModelFactory
 
 class SignUpActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySignUpBinding
@@ -32,7 +32,7 @@ class SignUpActivity : AppCompatActivity() {
         binding = ActivitySignUpBinding.inflate(layoutInflater)
         setContentView(binding.root)
         chatViewModel =
-            ViewModelProvider(this, AuthViewModelFactory(application))[ChatViewModel::class.java]
+            ViewModelProvider(this, ChatViewModelFactory(application))[ChatViewModel::class.java]
 
         initViews()
         initControl()

@@ -20,8 +20,8 @@ import com.example.message.adapter.UsersAdapter
 import com.example.message.model.User
 import com.example.message.util.GlideImageLoader
 import com.example.message.view.chat.ChatActivity
+import com.example.message.viewmodel.ChatViewModelFactory
 import com.example.message.viewmodel.ChatViewModel
-import com.example.message.viewmodel.AuthViewModelFactory
 import com.google.firebase.auth.FirebaseUser
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.Dispatchers
@@ -43,7 +43,7 @@ class HomeFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         chatViewModel = ViewModelProvider(
-            this, AuthViewModelFactory(application = Application())
+            this, ChatViewModelFactory(application = Application())
         )[ChatViewModel::class.java]
 
         glideImageLoader = GlideImageLoader(requireContext())
@@ -116,29 +116,28 @@ class HomeFragment : Fragment() {
     }
 
     private fun fetchUsersList() {
-        lifecycleScope.launch {
-            withContext(Dispatchers.IO) {
-                userList.clear()
-                chatViewModel.db.collection("users")
-                    .get()
-                    .addOnSuccessListener { querySnapshot ->
-                        for (doc in querySnapshot) {
-                            val userId = doc.getString("userId")
-                            val displayName = doc.getString("displayName")
-                            val email = doc.getString("email")
-                            val photoUrl = doc.getString("photoURL")
+        lifecycleScope.launch(Dispatchers.IO) {
+            userList.clear()
+            chatViewModel.db.collection("users")
+                .get()
+                .addOnSuccessListener { querySnapshot ->
+                    for (doc in querySnapshot) {
+                        val userId = doc.getString("userId")
+                        val displayName = doc.getString("displayName")
+                        val email = doc.getString("email")
+                        val photoUrl = doc.getString("photoURL")
 
-                            if (userId != chatViewModel.currentUser.value?.uid) {
-                                val user = User(userId, email, displayName, photoUrl)
-                                userList.add(user)
-                            }
+                        if (userId != chatViewModel.currentUser.value?.uid) {
+                            val user = User(userId, email, displayName, photoUrl)
+                            userList.add(user)
                         }
-                        //recyclerView
-                        setupRecyclerView()
                     }
-            }
+                    //recyclerView
+                    setupRecyclerView()
+                }
+
                 .addOnFailureListener { e ->
-                    Log.d("TAG", "onCreateView: ", e)
+                    Log.e("TAG", "onCreateView: ", e)
                     progressBar.visibility = View.GONE
                 }
         }

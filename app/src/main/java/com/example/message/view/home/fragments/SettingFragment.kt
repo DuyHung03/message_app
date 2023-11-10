@@ -19,7 +19,7 @@ import com.example.message.util.GlideImageLoader
 import com.example.message.util.toast
 import com.example.message.view.home.EditProfileActivity
 import com.example.message.viewmodel.ChatViewModel
-import com.example.message.viewmodel.AuthViewModelFactory
+import com.example.message.viewmodel.ChatViewModelFactory
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.auth.FirebaseUser
 import de.hdodenhof.circleimageview.CircleImageView
@@ -46,7 +46,7 @@ class SettingFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         chatViewModel = ViewModelProvider(
-            this, AuthViewModelFactory(application = Application())
+            this, ChatViewModelFactory(application = Application())
         )[ChatViewModel::class.java]
 
         glideImageLoader = GlideImageLoader(requireContext())

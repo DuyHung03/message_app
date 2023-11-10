@@ -16,8 +16,8 @@
         android:label = "@string/app_name"
         android:roundIcon = "@drawable/ic_launcher"
         android:supportsRtl = "true"
-        android:theme = "@style/Theme.Message"
-        tools:targetApi = "31">
+        android:theme = "@style/Base.Theme.Message"
+        tools:targetApi = "34">
         <activity
             android:windowSoftInputMode="stateHidden"
             android:name = ".view.chat.ChatActivity"

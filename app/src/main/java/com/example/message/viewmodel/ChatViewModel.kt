@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.message.model.Message
 import com.example.message.repository.ChatRepository
 import com.example.message.util.Resource
 import com.google.android.gms.tasks.OnFailureListener
@@ -101,4 +102,11 @@ class ChatViewModel(
             }
         }
     }
+
+    fun addMessageToDb(message: Message){
+        viewModelScope.launch {
+            chatRepository.addNewMessageToDatabase(message)
+        }
+    }
+
 }

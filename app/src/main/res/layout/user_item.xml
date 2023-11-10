@@ -23,7 +23,6 @@
             android:layout_width = "wrap_content"
             android:layout_height = "wrap_content"
             android:text = "@string/send"
-            android:textColor = "@color/blue"
             android:textSize = "18sp"
             android:textStyle = "bold" />
 
@@ -36,7 +35,6 @@
             android:scrollHorizontally = "true"
             android:singleLine = "true"
             android:text = "@string/enter_your_email_to_reset_password"
-            android:textColor = "@color/blue"
             android:textSize = "14sp" />
     </LinearLayout>
 

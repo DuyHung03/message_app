@@ -24,7 +24,7 @@ import com.example.message.util.toast
 import com.example.message.util.validateTextInputLayouts
 import com.example.message.view.home.MainActivity
 import com.example.message.viewmodel.ChatViewModel
-import com.example.message.viewmodel.AuthViewModelFactory
+import com.example.message.viewmodel.ChatViewModelFactory
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -47,7 +47,7 @@ class LoginActivity : AppCompatActivity() {
 
 
         chatViewModel = ViewModelProvider(
-            this, AuthViewModelFactory(application)
+            this, ChatViewModelFactory(application)
         )[ChatViewModel::class.java]
 
         initView()

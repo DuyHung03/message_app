@@ -11,7 +11,7 @@ import com.example.message.util.intent
 import com.example.message.view.auth.LoginActivity
 import com.example.message.view.home.MainActivity
 import com.example.message.viewmodel.ChatViewModel
-import com.example.message.viewmodel.AuthViewModelFactory
+import com.example.message.viewmodel.ChatViewModelFactory
 
 @SuppressLint("CustomSplashScreen")
 class SplashScreen : AppCompatActivity() {
@@ -27,7 +27,7 @@ class SplashScreen : AppCompatActivity() {
         setContentView(R.layout.activity_splash_screen)
 
         chatViewModel =
-            ViewModelProvider(this, AuthViewModelFactory(application))[ChatViewModel::class.java]
+            ViewModelProvider(this, ChatViewModelFactory(application))[ChatViewModel::class.java]
 
 
         Handler(Looper.getMainLooper()).postDelayed({

@@ -3,7 +3,8 @@
     <style name = "Base.Theme.Message"
            parent = "Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/blue</item>
+        <item name = "android:textColorPrimary">@color/text</item>
         <item name = "fontFamily">@font/baloo_paaji_2</item>
         <item name = "android:statusBarColor">#A0D0DA</item>
     </style>

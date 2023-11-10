@@ -5,6 +5,7 @@ import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
+import com.example.message.model.Message
 import com.example.message.util.Resource
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
@@ -121,6 +122,16 @@ class ChatRepository(
             }
     }
 
+     fun addNewMessageToDatabase(message: Message) {
+        db.collection("messages").document(message.messageId).set(message)
+            .addOnSuccessListener { _ ->
+                Log.d("TAG", "addNewMessageToDatabase: ${message.messageId + message.message}")
+            }
+            .addOnFailureListener { e ->
+                Log.w("TAG", "Error adding message", e)
+            }
+    }
+
     fun logOut() {
         auth.signOut()
         currentUser.postValue(null)
@@ -233,11 +244,4 @@ class ChatRepository(
                 callback(null, e.message.toString())
             }
     }
-
-    fun addMessageToDb(
-
-    ){
-
-    }
-
 }
