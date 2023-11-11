@@ -1,6 +1,7 @@
 package com.example.message.view.chat
 
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import android.widget.EditText
 import android.widget.ImageView
@@ -8,7 +9,10 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.message.R
+import com.example.message.adapter.MessageAdapter
 import com.example.message.databinding.ActivityChatBinding
 import com.example.message.model.Message
 import com.example.message.model.User
@@ -26,8 +30,10 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var sendButton: ImageView
     private lateinit var editTextMessage: EditText
     private lateinit var chatViewModel: ChatViewModel
+    private lateinit var recyclerView: RecyclerView
     private var recipient: User? = null
     private var currentUser: FirebaseUser? = null
+    private var messageList: List<Message> = mutableListOf()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,7 +58,6 @@ class ChatActivity : AppCompatActivity() {
                 intent.extras?.get("user_object") as? User
 
             if (recipient != null) {
-                binding.tv.text = recipient.toString()
                 displayName.text = recipient!!.displayName ?: recipient!!.email
                 glideImageLoader.load(
                     recipient!!.photoURL,
@@ -65,6 +70,11 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun initView() {
+        recyclerView = findViewById(R.id.recyclerView)
+        val layoutManager = LinearLayoutManager(this)
+        layoutManager.stackFromEnd = true
+        recyclerView.layoutManager = layoutManager
+
         toolbar = findViewById(R.id.chat_toolbar)
         setSupportActionBar(toolbar)
 
@@ -94,19 +104,39 @@ class ChatActivity : AppCompatActivity() {
         if (text.isNotEmpty()) {
             val message = Message(currentUser!!.uid, recipient!!.userId!!, text)
 
-            chatViewModel.addMessageToDb(message)
+            chatViewModel.addMessageToDb(currentUser!!.uid, recipient!!.userId!!, message)
 
+            fetchMessages()
+
+            editTextMessage.text.clear()
         }
     }
 
     override fun onStart() {
         super.onStart()
+        fetchMessages()
+    }
 
+    private fun fetchMessages() {
+        chatViewModel.fetchMessages(currentUser!!.uid, recipient!!.userId!!) { snapshot, e ->
+            if (e != null) {
+                Log.d("TAG", "fetchMessages: $e")
+            }
+
+            if (snapshot != null) {
+                messageList = snapshot.documents.mapNotNull { doc ->
+                    doc.toObject(Message::class.java)
+                }
+
+                val adapter = MessageAdapter(messageList, currentUser!!.uid)
+                recyclerView.adapter = adapter
+            }
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
-            onBackPressed()
+            this.finish()
             return true
         }
         return super.onOptionsItemSelected(item)

@@ -13,6 +13,8 @@ import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.QuerySnapshot
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -103,9 +105,19 @@ class ChatViewModel(
         }
     }
 
-    fun addMessageToDb(message: Message){
+    fun addMessageToDb(senderId: String, recipientId: String, message: Message) {
         viewModelScope.launch {
-            chatRepository.addNewMessageToDatabase(message)
+            chatRepository.addNewMessageToDatabase(senderId, recipientId, message)
+        }
+    }
+
+    fun fetchMessages(
+        senderId: String,
+        recipientId: String,
+        callback: (QuerySnapshot?, FirebaseFirestoreException?) -> Unit,
+    ) {
+        chatRepository.fetchMessages(senderId, recipientId) { snapshot, exception ->
+            callback(snapshot, exception)
         }
     }
 
