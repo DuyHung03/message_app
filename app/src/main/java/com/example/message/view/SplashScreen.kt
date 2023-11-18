@@ -15,7 +15,7 @@ import com.example.message.viewmodel.ChatViewModelFactory
 
 @SuppressLint("CustomSplashScreen")
 class SplashScreen : AppCompatActivity() {
-    private val splashTimeOut: Long = 1000 // 1 seconds
+    private val splashTimeOut: Long = 500 // 0.5 seconds
     private lateinit var chatViewModel: ChatViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,6 +29,9 @@ class SplashScreen : AppCompatActivity() {
         chatViewModel =
             ViewModelProvider(this, ChatViewModelFactory(application))[ChatViewModel::class.java]
 
+        if (intent != null) {
+            val email = intent.extras?.getString("email")
+        }
 
         Handler(Looper.getMainLooper()).postDelayed({
             chatViewModel.currentUser.observe(this) { res ->

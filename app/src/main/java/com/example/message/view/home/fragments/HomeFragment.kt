@@ -20,8 +20,8 @@ import com.example.message.adapter.UsersAdapter
 import com.example.message.model.User
 import com.example.message.util.GlideImageLoader
 import com.example.message.view.chat.ChatActivity
-import com.example.message.viewmodel.ChatViewModelFactory
 import com.example.message.viewmodel.ChatViewModel
+import com.example.message.viewmodel.ChatViewModelFactory
 import com.google.firebase.auth.FirebaseUser
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.Dispatchers
@@ -126,9 +126,13 @@ class HomeFragment : Fragment() {
                         val displayName = doc.getString("displayName")
                         val email = doc.getString("email")
                         val photoUrl = doc.getString("photoURL")
+                        val deviceToken = doc.getString("deviceToken")
+
+                        Log.d("TAG", "fetchUsersList: $deviceToken")
 
                         if (userId != chatViewModel.currentUser.value?.uid) {
-                            val user = User(userId, email, displayName, photoUrl)
+                            val user =
+                                User(userId, email, displayName = displayName, photoURL = photoUrl, deviceToken = deviceToken)
                             userList.add(user)
                         }
                     }

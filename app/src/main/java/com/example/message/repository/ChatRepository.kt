@@ -6,6 +6,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.example.message.model.Message
+import com.example.message.model.User
 import com.example.message.util.Resource
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
@@ -104,15 +105,7 @@ class ChatRepository(
         uid: String,
     ) {
         //hashMap User
-        val user = hashMapOf(
-            "email" to email,
-            "password" to password,
-            "userId" to uid,
-            "displayName" to null,
-            "photoURL" to null,
-            "isPasswordUpdated" to false,
-            "isNewUser" to true
-        )
+        val user = User(email, password, uid)
         //add user with generate id
         db.collection("users").document(email).set(user).addOnSuccessListener { _ ->
             Log.d("TAG", "DocumentSnapshot added with ID: $uid")
@@ -244,6 +237,8 @@ class ChatRepository(
         db.collection("messages")
             .whereIn("senderId", listOf(senderId, recipientId))
             .whereIn("recipientId", listOf(senderId, recipientId))
+            .orderBy("time")
+            .limitToLast(50)
             .addSnapshotListener { snapshot, e ->
                 if (e != null) {
                     callback(null, e)

@@ -3,12 +3,8 @@
               xmlns:tools = "http://schemas.android.com/tools"
               android:layout_width = "match_parent"
               android:layout_height = "wrap_content"
+              android:layout_marginTop = "10dp"
               android:gravity = "start">
-
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:layout_width = "45dp"
-        android:layout_height = "45dp"
-        android:src = "@drawable/ic_user_foreground" />
 
     <TextView
         android:id = "@+id/message"
@@ -16,8 +12,10 @@
         android:layout_height = "wrap_content"
         android:layout_gravity = "center"
         android:background = "@drawable/recipient_message_brg"
+        android:maxWidth = "300dp"
         android:paddingStart = "8dp"
         android:paddingTop = "6dp"
+        android:textSize="16sp"
         android:paddingEnd = "8dp"
         android:paddingBottom = "6dp"
         android:text = "TextView"

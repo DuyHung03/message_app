@@ -1,5 +1,6 @@
 package com.example.message.view.chat
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
@@ -15,8 +16,12 @@ import com.example.message.R
 import com.example.message.adapter.MessageAdapter
 import com.example.message.databinding.ActivityChatBinding
 import com.example.message.model.Message
+import com.example.message.model.NotificationData
+import com.example.message.model.PushNotification
 import com.example.message.model.User
+import com.example.message.notifacation.NotificationAPI
 import com.example.message.util.GlideImageLoader
+import com.example.message.util.setupHideKeyboardOnTouchOutside
 import com.example.message.viewmodel.ChatViewModel
 import com.example.message.viewmodel.ChatViewModelFactory
 import com.google.firebase.auth.FirebaseUser
@@ -34,6 +39,7 @@ class ChatActivity : AppCompatActivity() {
     private var recipient: User? = null
     private var currentUser: FirebaseUser? = null
     private var messageList: List<Message> = mutableListOf()
+    private lateinit var toToken: String
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,8 +54,16 @@ class ChatActivity : AppCompatActivity() {
         glideImageLoader = GlideImageLoader(this)
 
         initView()
-        initControl()
         setUserInfo()
+        initControl()
+
+//        chatViewModel.db.collection("users").document(recipient!!.email!!).get()
+//            .addOnCompleteListener { task ->
+//                if (task.isSuccessful) {
+//                    toToken = task.result.getString("deviceToken")
+//                    Log.d("TAG", "initView: $toToken")
+//                }
+//            }
     }
 
     private fun setUserInfo() {
@@ -59,6 +73,7 @@ class ChatActivity : AppCompatActivity() {
 
             if (recipient != null) {
                 displayName.text = recipient!!.displayName ?: recipient!!.email
+                toToken = recipient!!.deviceToken!!
                 glideImageLoader.load(
                     recipient!!.photoURL,
                     avatar,
@@ -71,17 +86,13 @@ class ChatActivity : AppCompatActivity() {
 
     private fun initView() {
         recyclerView = findViewById(R.id.recyclerView)
-        val layoutManager = LinearLayoutManager(this)
-        layoutManager.stackFromEnd = true
-        recyclerView.layoutManager = layoutManager
 
         toolbar = findViewById(R.id.chat_toolbar)
         setSupportActionBar(toolbar)
 
         supportActionBar?.setDisplayShowTitleEnabled(false) //hide default title
-
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_left_arrow_foreground)
+        supportActionBar?.themedContext
 
         currentUser = chatViewModel.currentUser.value
 
@@ -92,8 +103,14 @@ class ChatActivity : AppCompatActivity() {
         editTextMessage = binding.edtMessage
     }
 
-
     private fun initControl() {
+
+        setupHideKeyboardOnTouchOutside(
+            listOf(
+                binding.edtLayout
+            ), binding.recyclerView
+        )
+
         sendButton.setOnClickListener {
             sendMessage()
         }
@@ -106,9 +123,22 @@ class ChatActivity : AppCompatActivity() {
 
             chatViewModel.addMessageToDb(currentUser!!.uid, recipient!!.userId!!, message)
 
-            fetchMessages()
 
             editTextMessage.text.clear()
+
+            Log.d("TAG", "sendMessage: $toToken + ${currentUser!!.email}")
+
+
+//            send notification
+            NotificationAPI.retrofitService.postNotification(
+                PushNotification(
+                    NotificationData(
+                        currentUser!!.email!!,
+                        text
+                    ),
+                    toToken
+                )
+            )
         }
     }
 
@@ -117,6 +147,12 @@ class ChatActivity : AppCompatActivity() {
         fetchMessages()
     }
 
+    override fun onResume() {
+        super.onResume()
+        fetchMessages()
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
     private fun fetchMessages() {
         chatViewModel.fetchMessages(currentUser!!.uid, recipient!!.userId!!) { snapshot, e ->
             if (e != null) {
@@ -128,10 +164,32 @@ class ChatActivity : AppCompatActivity() {
                     doc.toObject(Message::class.java)
                 }
 
-                val adapter = MessageAdapter(messageList, currentUser!!.uid)
-                recyclerView.adapter = adapter
+                setupRecyclerView(messageList, currentUser!!.uid)
+
             }
         }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private fun setupRecyclerView(messageList: List<Message>, currentUserID: String) {
+        val layoutManager = LinearLayoutManager(this)
+        layoutManager.stackFromEnd = true
+        layoutManager.isSmoothScrollbarEnabled = true
+        recyclerView.layoutManager = layoutManager
+
+        val adapter = MessageAdapter(messageList, currentUserID)
+        recyclerView.adapter = adapter
+        recyclerView.adapter?.notifyDataSetChanged()
+
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                if (dy < 0 && layoutManager.findFirstVisibleItemPosition() == 0) {
+                    Log.d("TAG", "onScrolled: $dy")
+                }
+            }
+        })
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

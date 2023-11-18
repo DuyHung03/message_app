@@ -18,18 +18,18 @@
         android:layout_width = "match_parent"
         android:layout_height = "0dp"
         android:fillViewport = "true"
-        android:paddingStart = "10dp"
-        android:paddingEnd = "10dp"
-        android:layout_marginBottom="12dp"
         app:layout_constraintBottom_toTopOf = "@+id/linearLayout"
         app:layout_constraintEnd_toEndOf = "parent"
         app:layout_constraintStart_toStartOf = "parent"
         app:layout_constraintTop_toBottomOf = "@+id/chat_toolbar">
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
+            android:id = "@+id/recyclerView"
             android:layout_width = "match_parent"
-            android:layout_height = "wrap_content"/>
+            android:layout_height = "wrap_content"
+            android:paddingStart = "16dp"
+            android:paddingEnd = "16dp"
+            android:paddingBottom = "12dp" />
     </ScrollView>
 
     <LinearLayout
@@ -42,14 +42,27 @@
         app:layout_constraintEnd_toEndOf = "parent"
         app:layout_constraintStart_toStartOf = "parent">
 
-        <EditText
-            android:id = "@+id/edtMessage"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id = "@+id/edtLayout"
             android:layout_width = "0dp"
-            android:layout_height = "wrap_content"
+            android:layout_height = "match_parent"
             android:layout_weight = "1"
-            android:autofillHints = "message"
-            android:hint = "@string/message"
-            android:inputType = "text" />
+            android:hint = "@string/message">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id = "@+id/edtMessage"
+                android:layout_width = "match_parent"
+                android:layout_height = "match_parent"
+                android:inputType = "text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!--         <EditText -->
+        <!--             android:layout_width = "0dp" -->
+        <!--             android:layout_height = "wrap_content" -->
+        <!--             android:layout_weight = "1" -->
+        <!--             android:autofillHints = "message" -->
+        <!--             android:hint = "@string/message" -->
+        <!--             android:inputType = "text" /> -->
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id = "@+id/sendButton"
